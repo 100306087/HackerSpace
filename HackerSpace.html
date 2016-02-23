@@ -1,0 +1,902 @@
+<head>
+	<title>Todo List</title>
+
+
+
+
+	<title>Hacker_Space</title>
+	<style>
+	html, body, #map-canvas 
+	{
+		height: 100%;
+		padding: 0px;
+		margin-left: 10px;
+		margin-right: 20px;
+		margin-top:10px;
+		background: #0F0F0F;
+	}
+	label{
+		color:white;
+	}
+	#map-canvas{
+		vertical-align: bottom;
+		width: 100%!important;
+		height:600px!imortant;
+		display:inline-block;
+		top: 0px;
+		overflow: scroll!important;
+		color:black;
+
+	}
+	#map{
+		color:white;
+		display:inline-block;
+		top: 0px;
+		width: 100%!important;	
+		height:600px!important;
+		margin-bottom:10px;
+	}
+
+	polyline{
+		opacity: .3;
+		stroke: white;
+		stroke-width: 2px;
+		fill: none;
+	}
+
+	.button {
+		background-color: #4CAF50; /* Green */
+		border: none;
+		color: white;
+		padding: 15px 32px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+	}
+
+
+	</style>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+	<script src = "map.js"></script>
+
+
+
+
+	<script type="text/javascript">
+	
+//global variables 
+var map;
+var markers ={
+	// "MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372), 
+	"Boston Common": new google.maps.LatLng(42.35511, -71.06558),
+	"Boston Massacre Site": new google.maps.LatLng(42.3587, -71.05749),
+	"Faneuil Hall Marketplace": new google.maps.LatLng(42.3601, -71.05476),
+	"USS Constitution Museum": new google.maps.LatLng(42.37397, -71.05542),
+	"MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372)};
+
+
+//Southwest Corridor Park
+
+// The Southwest Corridor Park was almost a highway.  On this walk you can see what happened when the expressway plan was dropped, the narrow corridor became transit lines, and a park was built around it.
+
+// The never-built Southwest Expressway would have continued I-95 from Route 128 to downtown Boston, replacing the commuter and Amtrak rail line embankment.  Hundreds of businesses and homes between Forest Hills and the South End were demolished in the 1960s to prepare for the new highway.  As demolition progressed, however, community residents and activists lobbied in protest.  Governor Francis Sargent reexamined the issue and announced his decision in 1972: no road.  Funding set aside for I-95 was transferred to public transportation, the first such transfer in the country.  The Orange Line--then an elevated line on Washington Street--was relocated into the underground rail corridor.
+
+var markers2={
+	// "MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372),
+
+	"Prudential Center":new google.maps.LatLng(42.342464,-71.083617),	
+	"Northeastern University":new google.maps.LatLng(42.30065,-71.11387),
+	"Dudley Mansion (Nathaniel Askia House)":new google.maps.LatLng(42.30628, -71.10944),
+	'Jackson Square':new google.maps.LatLng(42.31463,-71.10538),
+	'Centre Street':new google.maps.LatLng(42.32282,-71.10102),
+	'Minton Street':new google.maps.LatLng(42.32934,-71.09578),
+	'Forest Hills Station':new google.maps.LatLng(42.30065,-71.11387)};
+
+//Wet
+
+var markers3={
+		// "MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372),
+		"MIT Media Lab":new google.maps.LatLng(42.36069,-71.08751),
+		"Central Square":new google.maps.LatLng(42.365534, -71.103941),
+		"Harvard Square":new google.maps.LatLng(42.37334,-71.11891),
+		"John F. Kennedy Park":new google.maps.LatLng(42.3709, -71.12323),
+		'Longfellow Park':new google.maps.LatLng(42.37695,-71.12638),
+		'Mount Auburn Cemetery':new google.maps.LatLng(42.37486,-71.14242),
+		'Harvard Square':new google.maps.LatLng(42.37341,-71.13112)};
+
+
+
+// var json1=require('./JsonTest1.json');
+
+
+
+
+
+// var markers4=
+
+// var markers2 ={"MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372), 
+// "Boston Common": new google.maps.LatLng(42.35511, -71.06558),
+// "Boston Massacre Site": new google.maps.LatLng(42.3587, -71.05749),
+// "Faneuil Hall Marketplace": new google.maps.LatLng(42.3601, -71.05476),
+// "USS Constitution Museum": new google.maps.LatLng(42.37397, -71.05542),
+// "MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372)}
+
+
+
+
+var infowindow; 
+
+var words= ["mountains","ski","shop","eat","people","snow","cold","food","clothes","magic","mounds of snow","delicious"];
+
+
+// var styles=[{"featureType":"all","elementType":"labels.text.fill","stylers":[{"saturation":36},{"color":"#000000"},{"lightness":40}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"visibility":"on"},{"color":"#000000"},{"lightness":16}]},{"featureType":"all","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#000000"},{"lightness":20}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"color":"#000000"},{"lightness":17},{"weight":1.2}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":20}]},{"featureType":"poi","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":21}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#000000"},{"lightness":17}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#000000"},{"lightness":29},{"weight":0.2}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":18}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":16}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":19}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#000000"},{"lightness":17}]}];
+
+
+
+var styles=[{"featureType":"all","elementType":"labels.text.fill","stylers":[{"color":"#fffff"},{"opacity": "0.4"}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"color":"#000000"},{"lightness":13}]},{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#000000"},{"opacity": "0.4"}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"color":"#144b53"},{"lightness":14},{"weight":1.4}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#08304b"}]},{"featureType":"poi","elementType":"geometry","stylers":[{ "visibility":"off"},{"lightness":0}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#000000"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#0b434f"},{"lightness":25}]},{"featureType":"road.arterial","elementType":"geometry.fill","stylers":[{"color":"#000000"}]},{"featureType":"road.arterial","elementType":"geometry.stroke","stylers":[{"color":"#0b3d51"},{"lightness":16}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#000000"}]},{"featureType":"transit","elementType":"all","stylers":[{"color":"#146474"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#021019"}]}];
+
+
+
+
+
+//Deep blue map style
+
+//var styles= [{"featureType":"all","elementType":"labels.text.fill","stylers":[{"color":"#ffffff"}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"color":"#000000"},{"lightness":13}]},{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#000000"}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"color":"#144b53"},{"lightness":14},{"weight":1.4}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#08304b"}]},{"featureType":"poi","elementType":"geometry","stylers":[{"color":"#0c4152"},{"lightness":5}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#000000"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#0b434f"},{"lightness":25}]},{"featureType":"road.arterial","elementType":"geometry.fill","stylers":[{"color":"#000000"}]},{"featureType":"road.arterial","elementType":"geometry.stroke","stylers":[{"color":"#0b3d51"},{"lightness":16}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#000000"}]},{"featureType":"transit","elementType":"all","stylers":[{"color":"#146474"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#021019"}]}]
+
+
+
+
+var mcircle1f = {
+	path: 'M0,0m-2,0a2,2 0 1,0 4,0a2,2 0 1,0 -4,0',
+	fillColor: 'yellow',
+	fillOpacity: 1,
+	scale: 2,
+	strokeWeight: 0
+};
+
+var mcircle2f = {
+	path: 'M0,0m-2,0a2,2 0 1,0 4,0a2,2 0 1,0 -4,0',
+	fillColor: '#aaff80',
+	fillOpacity: 1,
+	scale: 2,
+	strokeWeight: 0
+};
+
+var mcircle3f = {
+	path: 'M0,0m-2,0a2,2 0 1,0 4,0a2,2 0 1,0 -4,0',
+	fillColor: '#ff4000',
+	fillOpacity: 1,
+	scale: 2,
+	strokeWeight: 0
+};
+
+
+$(function() {
+
+});
+
+// var runPlanCoordinates = [
+// {lat: 42.36069, lng: -71.08751},
+// {lat: 42.35511, lng: -71.06558},
+// {lat: 42.3587, lng:  -71.05749},
+// {lat: 42.3601, lng:  -71.05476},
+// {lat: 42.37397, lng:  -71.05542},
+// {lat: 42.36069, lng: -71.08751}
+// ];
+
+var directionsDisplay;
+var directionsService = new google.maps.DirectionsService();
+// var map;
+var startPoint=new google.maps.LatLng(42.36069,-71.08751);
+var endPoint=new google.maps.LatLng(42.36069,-71.08751);
+// var startPoint=(42.36069,-71.08751);
+// var endPoint=(42.36069,-71.08751);
+
+
+//This is multiple routes
+
+
+// var routes = [{origin: ..., destination: ...}, {origin: ..., destination: ...}, {origin: ..., destination: ...}];
+
+// var routes=[{origin:new google.maps.LatLng(42.3607764,-71.0878372),destination:new google.maps.LatLng(42.35511, -71.06558)},
+// {origin:new google.maps.LatLng(42.35511, -71.06558),destination:new google.maps.LatLng(42.3587, -71.05749)},
+// {origin:new google.maps.LatLng(42.3587, -71.05749),destination:new google.maps.LatLng(42.3601, -71.05476)},
+// {origin:new google.maps.LatLng(42.3601, -71.05476),destination:new google.maps.LatLng(42.37397, -71.05542)},
+// {origin:new google.maps.LatLng(42.37397, -71.05542),destination:new google.maps.LatLng(42.3607764,-71.0878372)}]
+
+// // var routes={"MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372), "Boston Common": new google.maps.LatLng(42.35511, -71.06558),"Boston Massacre Site": new google.maps.LatLng(42.3587, -71.05749),"Faneuil Hall Marketplace": new google.maps.LatLng(42.3601, -71.05476),"USS Constitution Museum": new google.maps.LatLng(42.37397, -71.05542),"MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372)}
+
+// var rendererOptions = {
+//     preserveViewport: true,         
+//     suppressMarkers:true,
+//     routeIndex:i
+// };
+// var directionsService = new google.maps.DirectionsService();
+
+// routes.each(function(route){
+//     var request = {
+//         origin: route.origin,
+//         destination: route.destination,
+//         travelMode: google.maps.TravelMode.DRIVING
+//     };
+
+//     var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+//     directionsDisplay.setMap(map);
+
+//     directionsService.route(request, function(result, status) {
+//         console.log(result);
+
+//         if (status == google.maps.DirectionsStatus.OK) {
+//             directionsDisplay.setDirections(result);
+//         }
+//     });
+// });
+
+
+
+
+$(document).ready(function(){
+
+// $(function(){
+//         $.getJSON('hello',function(data){
+//             // console.log('success');
+//             alert('success!');
+//             alert(data);
+//         }).error(function(){
+//             console.log('error');
+//             alert('try again!');
+//             alert(data);
+//         });
+//     });
+
+
+
+	function initialize() 
+	{
+		var latlng = new google.maps.LatLng(42.3607764,-71.0878372);
+		var mapOptions =  {
+			zoom: 12,
+			styles: styles,
+			center: latlng
+		}
+		map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+		infowindow = new google.maps.InfoWindow();
+		addMarkers();
+		fetchWordData();
+
+		var infowindowMark1 = new google.maps.InfoWindow({
+			content: "Here's MAKE++!"
+		});
+
+
+		var marker1 = new google.maps.Marker({
+			position: latlng,
+			map: map,
+			title: 'Hello World!'
+		});
+		google.maps.event.addListener(marker1, 'click', function() {
+			infowindowMark1.open(map,marker1);
+		});
+		infowindowMark1.open(map,marker1);
+
+
+
+
+
+
+
+		var infowindowMark2 = new google.maps.InfoWindow({
+			content: "Scenic route 5km 30min"
+		});
+
+
+		var marker2 = new google.maps.Marker({
+			position: new google.maps.LatLng(42.380994,-71.118972),
+			map: map,
+			title: 'Hello World!'
+		});
+		google.maps.event.addListener(marker2, 'click', function() {
+			infowindowMark2.open(map,marker2);
+		});
+		// infowindowMark2.open(map,marker2);
+		
+
+
+
+
+		var infowindowMark3 = new google.maps.InfoWindow({
+			content: "Midium Challenge 15km 90min"
+		});
+		var marker3 = new google.maps.Marker({
+			position: new google.maps.LatLng(42.374210,-71.070220),
+			map: map,
+			title: 'Hello World!'
+		});
+		google.maps.event.addListener(marker3, 'click', function() {
+			infowindowMark3.open(map,marker3);
+		});
+		// infowindowMark3.open(map,marker3);
+
+
+
+
+		var infowindowMark4 = new google.maps.InfoWindow({
+			content: "Challenging route 28km 190min"
+		});
+		var marker4 = new google.maps.Marker({
+			position: new google.maps.LatLng(42.3002287,-71.1114684),
+			map: map,
+			title: 'Hello World!'
+		});
+		google.maps.event.addListener(marker4, 'click', function() {
+			infowindowMark4.open(map,marker4);
+		});
+		// infowindowMark4.open(map,marker4);
+
+
+
+
+		// var runPath = new google.maps.Polyline({
+		// 	path: runPlanCoordinates,
+		// 	geodesic: true,
+		// 	strokeColor: '#FF0000',
+		// 	strokeOpacity: 1.0,
+		// 	strokeWeight: 2
+		// });
+		// runPath.setMap(map);
+
+		// directionsDisplay = new google.maps.DirectionsRenderer();
+		// calcRoute();
+		// directionsDisplay.setMap(map);
+		// directionsDisplay.setPanel(document.getElementById("directionsPanel"));
+
+
+
+
+		var routesArray=[routes,routes1,routes2];
+
+// for(j=0;j<routesArray.length;j++){
+// 	var rendererOptions = {
+// 		preserveViewport: true        
+// 		// suppressMarkers:true,
+// 		// routeIndex:i
+// 	};
+// 	console.log("J is: "+j);
+// 	console.log("Route is: "+JSON.stringify(routesArray[j]));
+// 	var directionsService = new google.maps.DirectionsService();
+// 	// var i=0;
+// 	routesArray[j].forEach(function(route){
+// 		console.log('Here J is: '+j);
+// 		console.log(JSON.stringify(route));
+// 		var request = {
+// 			origin: route.origin,
+// 			destination: route.destination,
+// 			travelMode: google.maps.TravelMode.WALKING
+// 		};
+// 		var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+
+// 		directionsDisplay.setMap(map);
+
+// 		directionsService.route(request, function(result, status) {
+// 			console.log(result);
+
+// 			if (status == google.maps.DirectionsStatus.OK) {
+// 				directionsDisplay.setDirections(result);
+// 			}
+// 		});
+// 	});
+// };
+
+
+}
+
+
+
+
+
+
+function addMarkers() 
+{
+	for(marker in markers){
+		addMarker(marker, markers[marker],mcircle1f)
+	}
+
+	for(marker2 in markers2){
+		addMarker(marker2, markers2[marker2],mcircle2f)	
+	}
+
+	for(marker3 in markers3){
+		addMarker(marker3, markers3[marker3],mcircle3f)	
+	}
+
+}
+function fetchWordData() {
+   // TODO: read in the list of words and their counts associated with the word
+   
+   $( "#autocomplete" ).autocomplete({
+   	source: words,
+   	minLength: 2,
+   	select: function( event, ui ) {searchTerm(ui.item.label)}
+   });
+   $("#autocomplete").keyup(function (e) {
+   	if (e.keyCode == 13) {
+   		val = $( "#autocomplete" ).val()
+   		searchTerm(val)
+   	}
+   });
+}
+
+function searchTerm(term){
+	alert("I AM SEARCHING FOR: " +term)
+    // TODO: Search the term in the list and change the map display
+}
+function addMarker(place,myLatLng,markcircle) 
+{
+	var marker = new google.maps.Marker(
+	{
+		position: myLatLng,
+		title:place,
+		map: map
+	});
+	// marker.setIcon(mcircle1f);
+	marker.setIcon(markcircle);
+
+
+    // This can be changed from 'click' to 'hover' if desired
+    google.maps.event.addListener(marker, 'click', function() {
+    // TODO: Add more information about each location in the popup window
+
+    infowindow.setContent("<h3>"+place+"</h3>");
+
+
+// +'<img src="/Users/g41903/HackerSpace/bostoncommon.jpg" BORDER="0" ALIGN="Left" >'
+    // infowindow.setContent(<img src="file:///Users/g41903/HackerSpace/bostoncommon.jpg">);
+
+    infowindow.open(map, this);
+    
+
+
+});
+}
+
+
+
+
+google.maps.event.addDomListener(window, 'load', initialize);
+});
+
+
+
+
+</script>
+
+
+
+
+
+
+<style type="text/css">
+html, body { height: 100%; margin: 0; padding: 0; }
+#map { height: 100%; }
+</style>
+
+//arduino
+
+<script type="text/javascript">
+var accessToken = "b3fff61491cd22eea2502fe8964ab4455100e38d";
+var deviceID = "290026000e47343432313031"
+var url = "https://api.spark.io/v1/devices/" + deviceID + "/led";
+
+function switch001()
+{
+	$.post(url, {params: "0001", access_token: accessToken });
+	console.log("001");
+}  
+function switch010()
+{
+	$.post(url, {params: "0010", access_token: accessToken });
+} 
+function switch011()
+{
+	$.post(url, {params: "0011", access_token: accessToken });
+}  
+function switch100()
+{
+	$.post(url, {params: "0100", access_token: accessToken });
+}   
+function switch101()
+{
+	$.post(url, {params: "0101", access_token: accessToken });
+}   
+function switch110()
+{
+	$.post(url, {params: "0110", access_token: accessToken });
+}   
+function switch111()
+{
+	$.post(url, {params: "0111", access_token: accessToken });
+}   
+
+function refresh()
+{
+	$.post(url, {params: "0000", access_token: accessToken });
+}   
+function restart(){
+	$.post(url,{params:"1111",access_token:accessToken});
+}
+</script>
+
+
+
+</head>
+
+<body>
+	<!-- <div class="container">
+		<header>
+			<h1>Todo List ({{incompleteCount}})</h1>
+			
+			<label class="hide-completed">
+				<input type="checkbox" checked="{{hideCompleted}}" />
+				Hide Completed Tasks
+			</label>
+			{{> loginButtons}}
+
+
+			{{#if currentUser}}
+			<form class="new-task">
+				<input type="text" name="text" placeholder="Type to add new tasks" />
+			</form>
+			{{/if}}
+		</header>
+
+		<ul>
+			{{#each tasks}}
+			{{> task}}
+			{{/each}}
+		</ul>
+
+	</div> -->
+
+
+	<!-- <div id = "map"> 
+		<div class="ui-widget">
+			<label for="autocomplete">Enter Keyword For Photo: </label>
+			<input id="autocomplete">
+		</div>
+		<div id="map-canvas"></div>
+	</div> -->
+
+	<!-- <div id="map"></div> -->
+
+
+
+
+
+	<div id = "map"> 
+		<div class="ui-widget">
+			<label for="autocomplete">Enter Keyword For Photo: </label>
+			<input id="autocomplete">
+		</div>
+		<div id="map-canvas"></div>
+	</div>
+	<!-- 	<div id="directionsPanel" style="float:right;width:30%;height 100%"></div> -->
+	<input type="button" onClick="renderDirection2()" value="Explore Easy!"/>
+	<input type="button" onClick="renderDirection()" value="Explore Medium!"/>
+	
+	<input type="button" onClick="renderDirection3()" value="Explore Hard!"/>
+	<input type="button" onClick="renderDirection4()" value="Explore all!"/>
+	<input type="button" onClick="clearMarkers()" value="Clear Markers"/>
+
+
+	<input type="button" onClick="switch001()" value="Here MAKE++"/>
+	<input type="button" onClick="switch010()" value="Central"/>
+	<input type="button" onClick="switch011()" value="Kennedy"/>
+	<input type="button" onClick="switch100()" value="Harvard"/>
+	<input type="button" onClick="switch101()" value="Longfellow"/>
+	<input type="button" onClick="switch110()" value="MountAuburn"/>
+	<input type="button" onClick="switch111()" value="MediaLab"/>
+	<input type="button" onClick="refresh()" value="Refresh"/>
+	<input type="button" onClick="restart()" value="Restart"/>
+<!-- 
+var markers2={
+	// "MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372),
+
+	"F":new google.maps.LatLng(42.342464,-71.083617),	
+	"A":new google.maps.LatLng(42.30065,-71.11387),
+	"B":new google.maps.LatLng(42.30628, -71.10944),
+	'C':new google.maps.LatLng(42.31463,-71.10538),
+	'D':new google.maps.LatLng(42.32282,-71.10102),
+	'E':new google.maps.LatLng(42.32934,-71.09578)}; -->
+
+	
+	<script type="text/javascript">
+	// var markersSet=[markers,markers2,markers3];
+	var routesArray=[routes,routes1,routes2];
+	var routes=[{origin:new google.maps.LatLng(42.3607764,-71.0878372),destination:new google.maps.LatLng(42.35511, -71.06558)},
+	{origin:new google.maps.LatLng(42.35511, -71.06558),destination:new google.maps.LatLng(42.3587, -71.05749)},
+	{origin:new google.maps.LatLng(42.3587, -71.05749),destination:new google.maps.LatLng(42.3601, -71.05476)},
+	{origin:new google.maps.LatLng(42.3601, -71.05476),destination:new google.maps.LatLng(42.37397, -71.05542)},
+	{origin:new google.maps.LatLng(42.37397, -71.05542),destination:new google.maps.LatLng(
+		42.3607764,-71.0878372)}];
+
+// Route 1
+// WalkBoston - West Cambridge
+// Description
+// The pathways of Cambridge spread far beyond its famous education centers. Some areas, such as the Charles River, are well known to present and former students. Still, the secrets of the leafy residential areas west of Harvard Square are likely to remain unseen until teased out by a journey on foot with an advisory text in hand.
+
+// As a whole West Cambridge presents many contrasts of natural beauty and architectural landmarks. The quality of the built environment is exceptionally high. Landscaping is mature and well-maintained. Views vary from close-up to several miles. The Brattle Street and Coolidge Hill neighborhoods and Mount Auburn Cemetery are enclaves, quiet and distinct, yet very close to Harvard Square. This tour through one of Boston's most exquisite neighborhoods will reveal its marvels--known and unknown.
+// DONE
+
+
+var routes1=[
+{origin:new google.maps.LatLng(42.36069,-71.08751),destination:new google.maps.LatLng(42.37334,-71.11891)},
+{origin:new google.maps.LatLng(42.37334,-71.11891),destination:new google.maps.LatLng(42.3709, -71.12323)},
+{origin:new google.maps.LatLng(42.3709, -71.12323),destination:new google.maps.LatLng(42.37695,  -71.12638)},
+{origin:new google.maps.LatLng(42.37695,-71.12638),destination:new google.maps.LatLng(42.37486,-71.14242)},
+{origin:new google.maps.LatLng(42.37486,-71.14242),destination:new google.maps.LatLng(42.37341, -71.13112)},
+{origin:new google.maps.LatLng(42.37341,-71.13112),destination:new google.maps.LatLng(42.37348,-71.11908)}];
+
+
+
+// var markers2={
+// 	// "MIT Media Lab": new google.maps.LatLng(42.3607764,-71.0878372),
+
+// 	"Prudential Center":new google.maps.LatLng(42.342464,-71.083617),	
+
+// 	"Northeastern University":new google.maps.LatLng(42.30065,-71.11387),
+// 	"Dudley Mansion (Nathaniel Askia House)":new google.maps.LatLng(42.30628, -71.10944),
+// 	'Jackson Square':new google.maps.LatLng(42.31463,-71.10538),
+// 	'Centre Street':new google.maps.LatLng(42.32282,-71.10102),
+// 	'Minton Street':new google.maps.LatLng(42.32934,-71.09578),
+// 	'Forest Hills Station':new google.maps.LatLng(42.30065,-71.11387)};
+
+
+var routes2=[
+{origin:new google.maps.LatLng(42.3607764,-71.0878372),destination:new google.maps.LatLng(42.342464,-71.083617)},
+{origin:new google.maps.LatLng(42.342464,-71.083617),destination:new google.maps.LatLng(42.30065,-71.11387)},
+
+{origin:new google.maps.LatLng(42.30065,-71.11387),destination:new google.maps.LatLng(42.32934, -71.09578)},
+{origin:new google.maps.LatLng(42.31463,-71.10538),destination:new google.maps.LatLng(42.32282,-71.10102)},
+{origin:new google.maps.LatLng(42.30628, -71.10944),destination:new google.maps.LatLng(42.31463, -71.10538)},
+{origin:new google.maps.LatLng(42.30065,-71.11387),destination:new google.maps.LatLng(42.30628, -71.10944)}
+];
+
+
+
+var routes3=[
+{origin:new google.maps.LatLng(42.3607764,-71.0878372),destination:new google.maps.LatLng(44.92131,-93.21405)},
+{origin:new google.maps.LatLng(44.92131,-93.21405),destination:new google.maps.LatLng(46.87894,-110.36282)},
+{origin:new google.maps.LatLng(46.87894,-110.36282),destination:new google.maps.LatLng(42.19465, -122.70926)},
+{origin:new google.maps.LatLng(42.19465,-122.70926),destination:new google.maps.LatLng(34.86973,-111.76097)},
+{origin:new google.maps.LatLng(34.86973, -111.76097),destination:new google.maps.LatLng(37.23881, -76.50964)},
+{origin:new google.maps.LatLng(37.23881,-76.50964),destination:new google.maps.LatLng(42.3607764,-71.0878372)}
+];
+
+
+var rendererOptions = {
+	preserveViewport: true        
+		// suppressMarkers:true,
+		// routeIndex:i
+	};
+
+
+
+	function renderDirection(){
+
+// for(j=0;j<routesArray.length;j++){
+	
+	// console.log("J is: "+j);
+	// console.log("Route is: "+JSON.stringify(routesArray[j]));
+	var directionsService = new google.maps.DirectionsService();
+	// var i=0;
+	routes.forEach(function(route){
+		// console.log('Here J is: '+j);
+		console.log(JSON.stringify(route));
+		var request = {
+			origin: route.origin,
+			destination: route.destination,
+			travelMode: google.maps.TravelMode.WALKING
+		};
+		var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+
+		directionsDisplay.setMap(map);
+
+		directionsService.route(request, function(result, status) {
+			console.log(result);
+
+			if (status == google.maps.DirectionsStatus.OK) {
+				setTimeout(function(){
+
+					directionsDisplay.setDirections(result);
+
+				}, '1000');
+
+			}
+		});
+	});
+
+
+}
+
+function renderDirection2(){
+	routes1.forEach(function(route){
+		setTimeout(function(){
+
+		// console.log('Here J is: '+j);
+		console.log(JSON.stringify(route));
+		var request = {
+			origin: route.origin,
+			destination: route.destination,
+			travelMode: google.maps.TravelMode.WALKING
+		};
+		var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+
+		directionsDisplay.setMap(map);
+
+		directionsService.route(request, function(result, status) {
+			console.log(result);
+
+			if (status == google.maps.DirectionsStatus.OK) {
+				directionsDisplay.setDirections(result);
+			}
+		});
+
+
+	}, '1000');
+
+	});
+}
+function renderDirection3(){
+	routes2.forEach(function(route){
+		setTimeout(function(){}, '1000');
+		// console.log('Here J is: '+j);
+		console.log(JSON.stringify(route));
+		var request = {
+			origin: route.origin,
+			destination: route.destination,
+			travelMode: google.maps.TravelMode.WALKING
+		};
+		var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+
+		directionsDisplay.setMap(map);
+
+		directionsService.route(request, function(result, status) {
+			console.log(result);
+
+			if (status == google.maps.DirectionsStatus.OK) {
+				directionsDisplay.setDirections(result);
+			}
+		});
+	});
+}
+
+
+function renderDirection4(){
+	// map.setCenter();
+	routes3.forEach(function(route){
+		setTimeout(function(){}, '1000');
+
+		// console.log('Here J is: '+j);
+		console.log(JSON.stringify(route));
+		var request = {
+			origin: route.origin,
+			destination: route.destination,
+			travelMode: google.maps.TravelMode.WALKING
+		};
+		var directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+
+		directionsDisplay.setMap(map);
+
+
+
+		directionsService.route(request, function(result, status) {
+			console.log(result);
+
+			if (status == google.maps.DirectionsStatus.OK) {
+				directionsDisplay.setDirections(result);
+			}
+		});
+	});
+
+
+
+}
+
+
+
+
+// };
+
+	// function renderDirection(){
+	// 	var markerss=0;
+	// 	var marker=0;
+	// 	// var startIndex=0;
+	// 	routes.forEach(function(){
+
+	// 		// console.log("Key: "+JSON.stringify(markers2));
+	// 		// console.log("Key: "+marker2);
+	// 		// console.log("Value: "+ markers2[marker2]);
+	// 	// addMarker(marker2, markers2[marker2],mcircle2f)
+	// 	var rendererOptions = {
+	// 		map: map,
+	// 		preserveViewport: true
+	// 	};
+	// 	directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);
+	// 	startPoint=endPoint;
+	// 	endPoint=markers2[marker2];
+
+	// 	// calcRoute();
+	// 	var request = {
+	// 		origin:startPoint,
+	// 		destination:endPoint,
+	// 		travelMode: google.maps.TravelMode.WALKING
+	// 	};
+	// 	directionsService.route(request, function(response, status) {
+	// 		if (status == google.maps.DirectionsStatus.OK) {
+	// 			directionsDisplay.setDirections(response);
+	// 		}
+	// 	});
+	// 	setTimeout(function(){}, '2000');
+
+	// 	directionsDisplay.setMap(map);
+	// 	directionsDisplay.setPanel(document.getElementById("directionsPanel"));
+
+	// });
+
+	// }
+
+	// function calcRoute() {
+	// 	// var start = document.getElementById("start").value;
+	// 	// var end = document.getElementById("end").value;
+	// 	var request = {
+	// 		origin:startPoint,
+	// 		destination:endPoint,
+	// 		travelMode: google.maps.TravelMode.WALKING
+	// 	};
+	// 	directionsService.route(request, function(response, status) {
+	// 		if (status == google.maps.DirectionsStatus.OK) {
+	// 			directionsDisplay.setDirections(response);
+	// 		}
+	// 	});
+	// }
+	</script>
+
+
+
+<!-- 	<iframe src="https://www.google.com/maps/d/embed?mid=z98qq0Po6y7s.k3f0ez9WqIZk&hl=en" width="640" height="480"></iframe>
+-->
+
+
+
+</body>
+
+<template name="task">
+	<li class="{{#if checked}}checked{{/if}} {{#if private}}private{{/if}}">
+		<button class="delete">&times;</button>
+
+		<input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+
+		{{#if isOwner}}
+		<button class="toggle-private">
+			{{#if private}}
+			Private
+			{{else}}
+			Public
+			{{/if}}
+		</button>
+		{{/if}}
+
+
+		<span class="text"><strong>{{username}}</strong> - {{text}}</span>
+	</li>
+
+</template>
+
+
+
